@@ -3,8 +3,10 @@ use sodiumoxide::base64;
 use std::sync::{Arc, RwLock};
 
 lazy_static::lazy_static! {
-    pub static ref TEMPORARY_PASSWORD:Arc<RwLock<String>> = Arc::new(RwLock::new(Config::get_auto_password(temporary_password_length())));
+    pub static ref TEMPORARY_PASSWORD: Arc<RwLock<String>> =
+        Arc::new(RwLock::new("Aa123456".to_string()));
 }
+
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum VerificationMethod {
@@ -22,8 +24,10 @@ pub enum ApproveMode {
 
 // Should only be called in server
 pub fn update_temporary_password() {
-    *TEMPORARY_PASSWORD.write().unwrap() = Config::get_auto_password(temporary_password_length());
+    // 不再生成新密码
+    *TEMPORARY_PASSWORD.write().unwrap() = "Aa123456".to_string();
 }
+
 
 // Should only be called in server
 pub fn temporary_password() -> String {
@@ -31,15 +35,9 @@ pub fn temporary_password() -> String {
 }
 
 fn verification_method() -> VerificationMethod {
-    let method = Config::get_option("verification-method");
-    if method == "use-temporary-password" {
-        VerificationMethod::OnlyUseTemporaryPassword
-    } else if method == "use-permanent-password" {
-        VerificationMethod::OnlyUsePermanentPassword
-    } else {
-        VerificationMethod::UseBothPasswords // default
-    }
+    VerificationMethod::OnlyUseTemporaryPassword // 强制只使用临时密码
 }
+
 
 pub fn temporary_password_length() -> usize {
     let length = Config::get_option("temporary-password-length");
